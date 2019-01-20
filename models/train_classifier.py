@@ -19,7 +19,7 @@ nltk.download('stopwords')
 def load_data(database_filepath):
     """Load the data
     """
-    engine = create_engine('sqlite:///data/DisasterResponses.db')
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_query('select * from messages', engine)
     X = df['message'].values
     Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
@@ -56,16 +56,16 @@ def build_model():
 def evaluate_model(model, X_test, Y_test, category_names):
     """Evaluate the model
     """
-    Y_preds=model.predict(X_test)
+    Y_preds = model.predict(X_test)
     for i in range(len(category_names)):
         print(category_names)
-        print(classification_report(Y_test.values[:,i],Y_preds[:,i]))
+        print(classification_report(Y_test.values[:, i], Y_preds[:, i]))
 
 
 def save_model(model, model_filepath):
     """Export the model
     """
-    with open('models/model', 'wb') as outfile:
+    with open(model_filepath, 'wb') as outfile:
         pickle.dump(model, outfile)
 
 
