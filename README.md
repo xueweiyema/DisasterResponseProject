@@ -1,5 +1,5 @@
 # Disaster Response Pipeline Project
-![avatar](disasterresponseproject.gif)
+![avatar](disasterresponseproject.png)
 
 ### Installation:
 If you are using Python3 from https://www.python.org, then you can use the standard pip installer to install libraries.

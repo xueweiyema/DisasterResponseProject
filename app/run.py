@@ -14,6 +14,7 @@ from sqlalchemy import create_engine
 
 app = Flask(__name__)
 
+
 def tokenize(text):
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
@@ -25,26 +26,48 @@ def tokenize(text):
 
     return clean_tokens
 
+
 # load data
-engine = create_engine('sqlite:///../data/DisasterResponses.db')
+engine = create_engine('sqlite:///data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
 
 # load model
-model = joblib.load("../models/model")
+model = joblib.load("models/model")
 
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
-    
+
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
-    # create visuals
+
     # TODO: Below is an example - modify to create your own visuals
+    categories = df.iloc[:, 4:].sum().sort_values()
+    data = [Bar(
+        x=categories.index,
+        y=categories,
+        marker=dict(),
+        opacity=0.9
+    )]
+
+    layout = plotly.graph_objs.Layout(
+        title="Distribution of Message Categories  ",
+        xaxis=dict(
+            title='Categories',
+            tickangle=50
+        ),
+        yaxis=dict(
+            title='Number of Messages',
+            tickfont=dict(
+                color='Gray'
+            )
+        )
+    )
+
     graphs = [
         {
             'data': [
@@ -63,13 +86,13 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
+        },plotly.graph_objs.Figure(data=data, layout=layout)
     ]
-    
+
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
+
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
@@ -78,13 +101,13 @@ def index():
 @app.route('/go')
 def go():
     # save user input in query
-    query = request.args.get('query', '') 
+    query = request.args.get('query', '')
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
 
-    # This will render the go.html Please see that file. 
+    # This will render the go.html Please see that file.
     return render_template(
         'go.html',
         query=query,
